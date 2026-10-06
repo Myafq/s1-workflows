@@ -6,8 +6,9 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
-from jev_workflows.cli import main
+from jev_workflows.cli import _assessment_model, build_parser, main
 from jev_workflows.contracts import (
     AssessmentResult,
     BooleanDecision,
@@ -29,6 +30,18 @@ class FakeModel:
 
 
 class CliTests(unittest.TestCase):
+    def test_cloudflare_provider_defaults_to_clef(self) -> None:
+        args = build_parser().parse_args(["--provider", "cloudflare"])
+        with patch.dict(
+            "os.environ",
+            {"CLOUDFLARE_API_TOKEN": "secret", "CLOUDFLARE_ACCOUNT_ID": "account"},
+            clear=True,
+        ):
+            model = _assessment_model(args)
+
+        self.assertEqual(model.provider, "cloudflare")
+        self.assertEqual(model.model, "clef")
+
     def test_raw_diff_file_emits_stable_json(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "change.diff"
@@ -39,7 +52,8 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         decoded = json.loads(output.getvalue())
-        self.assertEqual(decoded["schema_version"], "1.0")
+        self.assertEqual(decoded["schema_version"], "1.1")
+        self.assertEqual(decoded["execution"]["chunks_assessed"], 1)
         self.assertEqual(decoded["provider"], "fake")
 
     def test_empty_diff_fails(self) -> None:

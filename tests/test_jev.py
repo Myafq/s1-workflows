@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import io
 import json
 import unittest
+import urllib.error
 from unittest.mock import patch
 
+from jev_workflows.contracts import ModelInputTooLargeError
 from jev_workflows.jev import ChoiceAnswer, JevClient, NoulAnswer, ScoreAnswer
 
 
@@ -57,6 +60,22 @@ class JevClientTests(unittest.TestCase):
         self.assertIsInstance(answers["class"], ChoiceAnswer)
         self.assertIsInstance(answers["review"], NoulAnswer)
         self.assertEqual(answers["review"].probability, 0.91)
+
+    @patch("jev_workflows.jev.urllib.request.urlopen")
+    def test_context_limit_response_becomes_retryable_error(self, urlopen) -> None:
+        urlopen.side_effect = urllib.error.HTTPError(
+            "https://example.test/v1/systemone",
+            400,
+            "Bad Request",
+            {},
+            io.BytesIO(b'{"detail":{"error_type":"max_tokens_exceeded"}}'),
+        )
+
+        with self.assertRaises(ModelInputTooLargeError):
+            JevClient("secret", base_url="https://example.test").evaluate(
+                state="large diff",
+                questions={"risk": {"type": "score", "criteria": ["low", "high"]}},
+            )
 
 
 if __name__ == "__main__":

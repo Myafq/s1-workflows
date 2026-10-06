@@ -8,12 +8,15 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from .assessment import JevAssessmentModel
-from .contracts import AssessmentInput, AssessmentModel
-from .jev import JevClient, JevError
+from .assessment import DecisionAssessmentModel
+from .clef import ClefClient
+from .contracts import AssessmentInput, AssessmentModel, DecisionModelError
+from .jev import JevClient
+from .runner import AssessmentRunner
 
 
-DEFAULT_MAX_BYTES = 1_000_000
+DEFAULT_CHUNK_BYTES = 48_000
+DEFAULT_MAX_BYTES = 10_000_000
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,7 +43,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repository", help="Repository identifier")
     parser.add_argument("--base", dest="base_revision", help="Base revision")
     parser.add_argument("--head", dest="head_revision", help="Head revision")
-    parser.add_argument("--model", default="jev-latest")
+    parser.add_argument(
+        "--provider",
+        choices=("typesafe", "cloudflare"),
+        default="typesafe",
+        help="Decision-model provider (default: typesafe)",
+    )
+    parser.add_argument(
+        "--model",
+        help="Model name (default: jev-latest, or clef for Cloudflare)",
+    )
     parser.add_argument(
         "--boolean-threshold",
         type=float,
@@ -48,7 +60,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Probability threshold for Boolean decisions (default: 0.5)",
     )
     parser.add_argument("--timeout", type=float, default=15.0)
-    parser.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES)
+    parser.add_argument(
+        "--chunk-bytes",
+        type=int,
+        default=DEFAULT_CHUNK_BYTES,
+        help="Initial maximum bytes per model call (default: 48000)",
+    )
+    parser.add_argument(
+        "--max-bytes",
+        type=int,
+        default=DEFAULT_MAX_BYTES,
+        help="Maximum total diff bytes accepted (default: 10000000)",
+    )
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output")
     return parser
 
@@ -65,6 +88,9 @@ def main(
     if args.max_bytes <= 0:
         print("error: --max-bytes must be positive", file=sys.stderr)
         return 2
+    if args.chunk_bytes < 1024:
+        print("error: --chunk-bytes must be at least 1024", file=sys.stderr)
+        return 2
     if args.git_range and (args.input != "-" or args.json_input):
         print(
             "error: --git-range cannot be combined with an input file or --json-input",
@@ -80,8 +106,8 @@ def main(
                 f"diff is {serialized_bytes} bytes; limit is {args.max_bytes} "
                 "(change --max-bytes to override)"
             )
-        model = model_factory(args) if model_factory else _jev_model(args)
-        result = model.assess(assessment)
+        model = model_factory(args) if model_factory else _assessment_model(args)
+        result = AssessmentRunner(model, chunk_bytes=args.chunk_bytes).assess(assessment)
         print(
             json.dumps(
                 result.to_dict(),
@@ -91,7 +117,7 @@ def main(
         )
         return 0
     except (
-        JevError,
+        DecisionModelError,
         OSError,
         ValueError,
         json.JSONDecodeError,
@@ -101,7 +127,13 @@ def main(
         return 1
 
 
-def _jev_model(args: argparse.Namespace) -> JevAssessmentModel:
+def _assessment_model(args: argparse.Namespace) -> DecisionAssessmentModel:
+    if args.provider == "cloudflare":
+        return _clef_model(args)
+    return _jev_model(args)
+
+
+def _jev_model(args: argparse.Namespace) -> DecisionAssessmentModel:
     api_key = os.environ.get("TYPESAFE_API_KEY")
     if not api_key:
         raise ValueError("TYPESAFE_API_KEY is not set")
@@ -110,9 +142,37 @@ def _jev_model(args: argparse.Namespace) -> JevAssessmentModel:
         base_url=os.environ.get("TYPESAFE_BASE_URL", "https://api.typesafe.ai"),
         timeout=args.timeout,
     )
-    return JevAssessmentModel(
+    return DecisionAssessmentModel(
         client,
-        model=args.model,
+        model=args.model or "jev-latest",
+        provider="typesafe",
+        boolean_threshold=args.boolean_threshold,
+    )
+
+
+def _clef_model(args: argparse.Namespace) -> DecisionAssessmentModel:
+    api_token = os.environ.get("CLOUDFLARE_API_TOKEN") or os.environ.get(
+        "CLOUDFLARE_AUTH_TOKEN"
+    )
+    if not api_token:
+        raise ValueError(
+            "CLOUDFLARE_API_TOKEN or CLOUDFLARE_AUTH_TOKEN is not set"
+        )
+    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
+    if not account_id:
+        raise ValueError("CLOUDFLARE_ACCOUNT_ID is not set")
+    client = ClefClient(
+        api_token,
+        account_id,
+        base_url=os.environ.get(
+            "CLOUDFLARE_BASE_URL", "https://api.cloudflare.com/client/v4"
+        ),
+        timeout=args.timeout,
+    )
+    return DecisionAssessmentModel(
+        client,
+        model=args.model or "clef",
+        provider="cloudflare",
         boolean_threshold=args.boolean_threshold,
     )
 

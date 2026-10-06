@@ -1,7 +1,7 @@
 [project]
 name = "jev-workflows"
 version = "0.1.0"
-description = "Fast structured pull-request risk assessment using TypeSafe Jev"
+description = "Fast structured pull-request risk assessment using Jev or Clef"
 requires-python = ">=3.11"
 
 [project.scripts]

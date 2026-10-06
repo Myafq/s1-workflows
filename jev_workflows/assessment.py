@@ -7,9 +7,10 @@ from .contracts import (
     AssessmentResult,
     BooleanDecision,
     Classification,
+    DecisionModelError,
     Score,
 )
-from .jev import Answer, ChoiceAnswer, DecisionClient, JevError, NoulAnswer, ScoreAnswer
+from .jev import Answer, ChoiceAnswer, DecisionClient, NoulAnswer, ScoreAnswer
 
 
 RISK_LEVELS = [
@@ -80,24 +81,26 @@ def _answer(answers: dict[str, Answer], name: str, expected: type[T]) -> T:
     try:
         answer = answers[name]
     except KeyError as error:
-        raise JevError(f"decision model response is missing '{name}'") from error
+        raise DecisionModelError(f"decision model response is missing '{name}'") from error
     if not isinstance(answer, expected):
-        raise JevError(f"decision model returned the wrong answer type for '{name}'")
+        raise DecisionModelError(f"decision model returned the wrong answer type for '{name}'")
     return answer
 
 
-class JevAssessmentModel:
+class DecisionAssessmentModel:
     def __init__(
         self,
         client: DecisionClient,
         *,
         model: str = "jev-latest",
+        provider: str = "typesafe",
         boolean_threshold: float = 0.5,
     ) -> None:
         if not 0 <= boolean_threshold <= 1:
             raise ValueError("boolean_threshold must be between 0 and 1")
         self.client = client
         self.model = model
+        self.provider = provider
         self.boolean_threshold = boolean_threshold
 
     def assess(self, assessment: AssessmentInput) -> AssessmentResult:
@@ -115,7 +118,7 @@ class JevAssessmentModel:
 
         classification_answer = _answer(answers, "classification", ChoiceAnswer)
         if classification_answer.choice not in CLASSIFICATION_CRITERIA:
-            raise JevError("decision model returned an unknown classification")
+            raise DecisionModelError("decision model returned an unknown classification")
 
         deep_answer = _answer(answers, "deeper_review", NoulAnswer)
         flags: dict[str, BooleanDecision] = {}
@@ -124,7 +127,7 @@ class JevAssessmentModel:
             flags[name] = self._boolean(answer)
 
         return AssessmentResult(
-            provider="typesafe",
+            provider=self.provider,
             model=self.model,
             scores=scores,
             classification=Classification(
@@ -141,3 +144,7 @@ class JevAssessmentModel:
             value=answer.probability >= self.boolean_threshold,
             probability=answer.probability,
         )
+
+
+# Backward-compatible name for callers using the original Jev-only adapter.
+JevAssessmentModel = DecisionAssessmentModel

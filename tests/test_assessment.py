@@ -55,7 +55,7 @@ class AssessmentTests(unittest.TestCase):
 
         result = adapter.assess(AssessmentInput(diff="diff --git a/a b/a\n+safe"))
 
-        self.assertEqual(result.schema_version, "1.0")
+        self.assertEqual(result.schema_version, "1.1")
         self.assertEqual(result.classification.value, "significant")
         self.assertTrue(result.deeper_review.value)
         self.assertFalse(result.risk_flags["sensitive_data"].value)
