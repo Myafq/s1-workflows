@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from jev_workflows.contracts import (
+from s1_workflows.contracts import (
     AssessmentInput,
     AssessmentResult,
     BooleanDecision,
@@ -10,7 +10,7 @@ from jev_workflows.contracts import (
     ModelInputTooLargeError,
     Score,
 )
-from jev_workflows.runner import AssessmentRunner, aggregate_results, split_diff
+from s1_workflows.runner import AssessmentRunner, aggregate_results, split_diff
 
 
 def result(

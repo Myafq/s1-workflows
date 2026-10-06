@@ -8,8 +8,8 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from jev_workflows.cli import _assessment_model, build_parser, main
-from jev_workflows.contracts import (
+from s1_workflows.cli import _assessment_model, build_parser, main
+from s1_workflows.contracts import (
     AssessmentResult,
     BooleanDecision,
     Classification,

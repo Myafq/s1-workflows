@@ -6,7 +6,7 @@ import urllib.request
 from typing import Any
 
 from .contracts import DecisionModelError, ModelInputTooLargeError
-from .jev import Answer, parse_answers
+from .s1 import Answer, parse_answers
 
 
 SUPPORTED_CLEF_MODELS = {"clef", "clef-flash"}

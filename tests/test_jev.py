@@ -6,8 +6,9 @@ import unittest
 import urllib.error
 from unittest.mock import patch
 
-from jev_workflows.contracts import ModelInputTooLargeError
-from jev_workflows.jev import ChoiceAnswer, JevClient, NoulAnswer, ScoreAnswer
+from s1_workflows.contracts import ModelInputTooLargeError
+from s1_workflows.jev import JevClient
+from s1_workflows.s1 import ChoiceAnswer, NoulAnswer, ScoreAnswer
 
 
 class FakeResponse:
@@ -43,7 +44,7 @@ class FakeResponse:
 
 
 class JevClientTests(unittest.TestCase):
-    @patch("jev_workflows.jev.urllib.request.urlopen", return_value=FakeResponse())
+    @patch("s1_workflows.jev.urllib.request.urlopen", return_value=FakeResponse())
     def test_evaluate_parses_every_answer_type(self, urlopen) -> None:
         client = JevClient("secret", base_url="https://example.test")
         answers = client.evaluate(
@@ -61,7 +62,7 @@ class JevClientTests(unittest.TestCase):
         self.assertIsInstance(answers["review"], NoulAnswer)
         self.assertEqual(answers["review"].probability, 0.91)
 
-    @patch("jev_workflows.jev.urllib.request.urlopen")
+    @patch("s1_workflows.jev.urllib.request.urlopen")
     def test_context_limit_response_becomes_retryable_error(self, urlopen) -> None:
         urlopen.side_effect = urllib.error.HTTPError(
             "https://example.test/v1/systemone",

@@ -10,7 +10,7 @@ from .contracts import (
     DecisionModelError,
     Score,
 )
-from .jev import Answer, ChoiceAnswer, DecisionClient, NoulAnswer, ScoreAnswer
+from .s1 import Answer, ChoiceAnswer, DecisionClient, NoulAnswer, ScoreAnswer
 
 
 RISK_LEVELS = [
@@ -92,8 +92,8 @@ class DecisionAssessmentModel:
         self,
         client: DecisionClient,
         *,
-        model: str = "jev-latest",
-        provider: str = "typesafe",
+        model: str,
+        provider: str,
         boolean_threshold: float = 0.5,
     ) -> None:
         if not 0 <= boolean_threshold <= 1:
@@ -144,7 +144,3 @@ class DecisionAssessmentModel:
             value=answer.probability >= self.boolean_threshold,
             probability=answer.probability,
         )
-
-
-# Backward-compatible name for callers using the original Jev-only adapter.
-JevAssessmentModel = DecisionAssessmentModel

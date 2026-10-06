@@ -140,7 +140,7 @@ class AssessmentResult:
 
 
 class AssessmentModel(Protocol):
-    """Adapter boundary for Jev or any future decision model."""
+    """Adapter boundary for any System One decision model."""
 
     def assess(self, assessment: AssessmentInput) -> AssessmentResult:
         ...

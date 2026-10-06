@@ -6,8 +6,8 @@ import unittest
 import urllib.error
 from unittest.mock import patch
 
-from jev_workflows.clef import ClefClient, ClefError
-from jev_workflows.jev import ChoiceAnswer, NoulAnswer, ScoreAnswer
+from s1_workflows.clef import ClefClient, ClefError
+from s1_workflows.s1 import ChoiceAnswer, NoulAnswer, ScoreAnswer
 
 
 class FakeResponse:
@@ -45,7 +45,7 @@ class FakeResponse:
 
 
 class ClefClientTests(unittest.TestCase):
-    @patch("jev_workflows.clef.urllib.request.urlopen", return_value=FakeResponse())
+    @patch("s1_workflows.clef.urllib.request.urlopen", return_value=FakeResponse())
     def test_evaluate_calls_workers_ai_and_parses_envelope(self, urlopen) -> None:
         client = ClefClient(
             "secret", "account", base_url="https://api.example.test/client/v4"
@@ -70,10 +70,10 @@ class ClefClientTests(unittest.TestCase):
     def test_rejects_unknown_model_before_request(self) -> None:
         with self.assertRaisesRegex(ValueError, "unsupported Cloudflare model"):
             ClefClient("secret", "account").evaluate(
-                state="change", questions={"risk": {"type": "noul"}}, model="jev-latest"
+                state="change", questions={"risk": {"type": "noul"}}, model="unsupported"
             )
 
-    @patch("jev_workflows.clef.urllib.request.urlopen")
+    @patch("s1_workflows.clef.urllib.request.urlopen")
     def test_cloudflare_http_error_has_provider_context(self, urlopen) -> None:
         urlopen.side_effect = urllib.error.HTTPError(
             "https://example.test", 401, "Unauthorized", {}, io.BytesIO(b"denied")

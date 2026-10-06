@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import unittest
 
-from jev_workflows.assessment import (
+from s1_workflows.assessment import (
     CLASSIFICATION_CRITERIA,
+    DecisionAssessmentModel,
     FLAG_QUESTIONS,
     SCORE_QUESTIONS,
-    JevAssessmentModel,
     build_questions,
 )
-from jev_workflows.contracts import AssessmentInput, Score
-from jev_workflows.jev import ChoiceAnswer, NoulAnswer, ScoreAnswer
+from s1_workflows.contracts import AssessmentInput, Score
+from s1_workflows.s1 import ChoiceAnswer, NoulAnswer, ScoreAnswer
 
 
 class FakeClient:
@@ -18,7 +18,7 @@ class FakeClient:
         self.state = None
         self.questions = None
 
-    def evaluate(self, *, state, questions, model="jev-latest"):
+    def evaluate(self, *, state, questions, model):
         self.state = state
         self.questions = questions
         answers = {
@@ -41,7 +41,7 @@ class FakeClient:
 
 
 class AssessmentTests(unittest.TestCase):
-    def test_questions_use_native_jev_types(self) -> None:
+    def test_questions_use_system_one_types(self) -> None:
         questions = build_questions()
 
         self.assertEqual(questions["security_risk"]["type"], "score")
@@ -51,7 +51,9 @@ class AssessmentTests(unittest.TestCase):
 
     def test_adapter_normalizes_result(self) -> None:
         client = FakeClient()
-        adapter = JevAssessmentModel(client, boolean_threshold=0.6)
+        adapter = DecisionAssessmentModel(
+            client, model="test", provider="fake", boolean_threshold=0.6
+        )
 
         result = adapter.assess(AssessmentInput(diff="diff --git a/a b/a\n+safe"))
 

@@ -1,4 +1,4 @@
-# jev-workflows
+# s1-workflows
 
 Fast, structured risk triage for a pull request or diff. One decision-model request returns:
 
@@ -32,15 +32,15 @@ export CLOUDFLARE_API_TOKEN='...'
 Assess a diff from stdin or a file:
 
 ```bash
-git diff origin/main...HEAD | .venv/bin/jev-assess --pretty --title 'Add cache'
-.venv/bin/jev-assess changes.diff --pretty
+git diff origin/main...HEAD | .venv/bin/s1-assess --pretty --title 'Add cache'
+.venv/bin/s1-assess changes.diff --pretty
 ```
 
 Use Cloudflare Clef instead:
 
 ```bash
-.venv/bin/jev-assess changes.diff --provider cloudflare --pretty
-.venv/bin/jev-assess changes.diff --provider cloudflare --model clef-flash --pretty
+.venv/bin/s1-assess changes.diff --provider cloudflare --pretty
+.venv/bin/s1-assess changes.diff --provider cloudflare --model clef-flash --pretty
 ```
 
 Cloudflare supports `clef` (default) and `clef-flash`. `CLOUDFLARE_AUTH_TOKEN`
@@ -49,13 +49,13 @@ is accepted as an alternative token variable.
 Generate the diff directly from a local repository:
 
 ```bash
-.venv/bin/jev-assess --git-range origin/main...HEAD --pretty
+.venv/bin/s1-assess --git-range origin/main...HEAD --pretty
 ```
 
 Pass PR metadata and a diff as one JSON object:
 
 ```bash
-.venv/bin/jev-assess assessment.json --json-input --pretty
+.venv/bin/s1-assess assessment.json --json-input --pretty
 ```
 
 Input schema:
@@ -81,7 +81,7 @@ Boolean probability win. The output's `execution` object reports what happened.
 Tune the per-call threshold or total 10 MB safety limit:
 
 ```bash
-.venv/bin/jev-assess changes.diff --chunk-bytes 32000 --max-bytes 20000000
+.venv/bin/s1-assess changes.diff --chunk-bytes 32000 --max-bytes 20000000
 ```
 
 Chunking can miss risks that emerge only from interactions across chunks. A true
@@ -90,7 +90,7 @@ than a substitute for full code review.
 
 ## Model adapters
 
-The boundary is `AssessmentModel` in `jev_workflows/contracts.py`:
+The boundary is `AssessmentModel` in `s1_workflows/contracts.py`:
 
 ```python
 class AnotherModel:
