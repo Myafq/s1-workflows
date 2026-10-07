@@ -80,10 +80,10 @@ def render_github_comment(result: AssessmentResult) -> str:
 
 def _score_badge(name: str, score: Score) -> str:
     label = SCORE_LABELS.get(name, _humanize(name))
-    value = f"{score.value:g}/4"
+    value = f"{score.value:g}/5"
     description = SCORE_QUESTIONS.get(name, f"Risk dimension: {_humanize(name)}.")
     title = (
-        f"{description} Score: {score.value:g} out of 4. "
+        f"{description} Score: {score.value:g} out of 5. "
         f"Confidence: {_percent(score.confidence)}."
     )
     return _badge(label, value, _score_color(score.value), title)
@@ -130,13 +130,13 @@ def _badge(label: str, message: str, color: str, title: str) -> str:
 
 
 def _score_color(value: float) -> str:
-    if value < 0.5:
+    if value <= 1:
         return "brightgreen"
-    if value < 1.5:
+    if value <= 2:
         return "green"
-    if value < 2.5:
+    if value <= 3:
         return "yellow"
-    if value < 3.5:
+    if value <= 4:
         return "orange"
     return "red"
 

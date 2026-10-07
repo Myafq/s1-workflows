@@ -18,9 +18,11 @@ class GitHubCommentTests(unittest.TestCase):
             provider="fake",
             model="test-model",
             scores={
-                "security_risk": Score(0, 0.95),
+                "security_risk": Score(1, 0.95),
                 "performance_risk": Score(2, 0.8),
-                "overall_risk": Score(4, 0.9),
+                "change_impact": Score(3, 0.85),
+                "maintainability_risk": Score(4, 0.88),
+                "overall_risk": Score(5, 0.9),
             },
             classification=Classification("high_risk", 0.82),
             deeper_review=BooleanDecision(True, 0.76),
@@ -35,9 +37,11 @@ class GitHubCommentTests(unittest.TestCase):
 
         self.assertIn("## S1 risk assessment", comment)
         self.assertIn("label=Classification&message=high+risk&color=orange", comment)
-        self.assertIn("label=Security&message=0%2F4&color=brightgreen", comment)
-        self.assertIn("label=Performance&message=2%2F4&color=yellow", comment)
-        self.assertIn("label=Overall+risk&message=4%2F4&color=red", comment)
+        self.assertIn("label=Security&message=1%2F5&color=brightgreen", comment)
+        self.assertIn("label=Performance&message=2%2F5&color=green", comment)
+        self.assertIn("label=Change+impact&message=3%2F5&color=yellow", comment)
+        self.assertIn("label=Maintainability&message=4%2F5&color=orange", comment)
+        self.assertIn("label=Overall+risk&message=5%2F5&color=red", comment)
         self.assertIn("label=Sensitive+data&message=flagged&color=red", comment)
         self.assertIn("label=Public+contract&message=clear&color=brightgreen", comment)
         self.assertIn("Confidence: 95%.", comment)

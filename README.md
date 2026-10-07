@@ -2,7 +2,7 @@
 
 Fast, structured risk triage for a pull request or diff. One decision-model request returns:
 
-- 0–4 scores for security, performance, change impact, maintainability, and overall risk;
+- 0–5 scores for security, performance, change impact, maintainability, and overall risk;
 - a `trivial` / `routine` / `significant` / `high_risk` / `critical` classification;
 - risk flags with probabilities;
 - a Boolean decision on whether deeper code review is warranted.

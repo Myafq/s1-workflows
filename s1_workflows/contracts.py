@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping, Protocol
 
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 
 
 class ModelInputTooLargeError(ValueError):
@@ -88,8 +88,8 @@ class Score:
     probabilities: dict[str, float] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if not 0 <= self.value <= 4:
-            raise ValueError("score value must be between 0 and 4")
+        if not 0 <= self.value <= 5:
+            raise ValueError("score value must be between 0 and 5")
         _validate_probability(self.confidence, "score confidence")
         _validate_probabilities(self.probabilities)
 

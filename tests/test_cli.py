@@ -52,7 +52,7 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         decoded = json.loads(output.getvalue())
-        self.assertEqual(decoded["schema_version"], "1.1")
+        self.assertEqual(decoded["schema_version"], "1.2")
         self.assertEqual(decoded["execution"]["chunks_assessed"], 1)
         self.assertEqual(decoded["provider"], "fake")
 

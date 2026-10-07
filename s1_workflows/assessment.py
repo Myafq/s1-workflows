@@ -15,10 +15,11 @@ from .s1 import Answer, ChoiceAnswer, DecisionClient, NoulAnswer, ScoreAnswer
 
 RISK_LEVELS = [
     "0 - No meaningful risk in this dimension",
-    "1 - Low, localized, and easy to detect or reverse",
-    "2 - Moderate; warrants normal reviewer attention",
-    "3 - High; likely or costly failure needs specialist review or testing",
-    "4 - Critical; plausible severe impact, unsafe to merge without mitigation",
+    "1 - Safe; negligible risk, localized, easy to detect, and easy to reverse",
+    "2 - Low; limited risk suitable for normal reviewer attention",
+    "3 - Medium; meaningful risk needing focused review or testing",
+    "4 - High; likely or costly failure needs specialist review or testing",
+    "5 - Critical; plausible severe impact, unsafe to merge without mitigation",
 ]
 
 SCORE_QUESTIONS = {
