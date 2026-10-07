@@ -11,6 +11,7 @@ from typing import Callable
 from .assessment import DecisionAssessmentModel
 from .clef import ClefClient
 from .contracts import AssessmentInput, AssessmentModel, DecisionModelError
+from .github_comment import render_github_comment
 from .jev import JevClient
 from .runner import AssessmentRunner
 
@@ -73,6 +74,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum total diff bytes accepted (default: 10000000)",
     )
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output")
+    parser.add_argument(
+        "--format",
+        choices=("json", "github-comment"),
+        default="json",
+        help="Output format (default: json)",
+    )
     return parser
 
 
@@ -108,13 +115,16 @@ def main(
             )
         model = model_factory(args) if model_factory else _assessment_model(args)
         result = AssessmentRunner(model, chunk_bytes=args.chunk_bytes).assess(assessment)
-        print(
-            json.dumps(
-                result.to_dict(),
-                indent=2 if args.pretty else None,
-                sort_keys=args.pretty,
+        if args.format == "github-comment":
+            print(render_github_comment(result))
+        else:
+            print(
+                json.dumps(
+                    result.to_dict(),
+                    indent=2 if args.pretty else None,
+                    sort_keys=args.pretty,
+                )
             )
-        )
         return 0
     except (
         DecisionModelError,

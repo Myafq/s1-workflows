@@ -2,13 +2,15 @@
 
 Fast, structured risk triage for a pull request or diff. One decision-model request returns:
 
-- 0–4 scores for security, performance, change impact, maintainability, and overall risk;
+- 0–5 scores for security, performance, change impact, maintainability, and overall risk;
 - a `trivial` / `routine` / `significant` / `high_risk` / `critical` classification;
 - risk flags with probabilities;
 - a Boolean decision on whether deeper code review is warranted.
 
 TypeSafe Jev and Cloudflare Clef use compatible `score`, `choice`, and `noul`
-outputs. The CLI emits a stable, model-neutral JSON result.
+outputs. The CLI emits a stable, model-neutral JSON result. It can also emit a
+compact GitHub comment with color-coded badges. Badge hover text contains the
+full risk description, confidence, or probability.
 
 ## Setup
 
@@ -34,6 +36,13 @@ Assess a diff from stdin or a file:
 ```bash
 git diff origin/main...HEAD | .venv/bin/s1-assess --pretty --title 'Add cache'
 .venv/bin/s1-assess changes.diff --pretty
+```
+
+Generate Markdown ready for a pull-request comment:
+
+```bash
+.venv/bin/s1-assess changes.diff --format github-comment > assessment.md
+gh pr comment --body-file assessment.md
 ```
 
 Use Cloudflare Clef instead:

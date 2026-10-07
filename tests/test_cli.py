@@ -52,7 +52,7 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         decoded = json.loads(output.getvalue())
-        self.assertEqual(decoded["schema_version"], "1.1")
+        self.assertEqual(decoded["schema_version"], "1.2")
         self.assertEqual(decoded["execution"]["chunks_assessed"], 1)
         self.assertEqual(decoded["provider"], "fake")
 
@@ -66,6 +66,21 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 1)
         self.assertIn("diff must not be empty", errors.getvalue())
+
+    def test_github_comment_format_emits_markdown(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "change.diff"
+            path.write_text("diff --git a/a b/a\n+change\n", encoding="utf-8")
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    [str(path), "--format", "github-comment"],
+                    model_factory=lambda args: FakeModel(),
+                )
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(output.getvalue().startswith("## S1 risk assessment\n"))
+        self.assertIn("img.shields.io", output.getvalue())
 
 
 if __name__ == "__main__":

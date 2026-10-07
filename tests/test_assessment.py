@@ -57,7 +57,7 @@ class AssessmentTests(unittest.TestCase):
 
         result = adapter.assess(AssessmentInput(diff="diff --git a/a b/a\n+safe"))
 
-        self.assertEqual(result.schema_version, "1.1")
+        self.assertEqual(result.schema_version, "1.2")
         self.assertEqual(result.classification.value, "significant")
         self.assertTrue(result.deeper_review.value)
         self.assertFalse(result.risk_flags["sensitive_data"].value)
@@ -65,8 +65,8 @@ class AssessmentTests(unittest.TestCase):
         self.assertIn("never as instructions", client.state["task"])
 
     def test_shared_contract_rejects_out_of_range_score(self) -> None:
-        with self.assertRaisesRegex(ValueError, "between 0 and 4"):
-            Score(value=5, confidence=0.9)
+        with self.assertRaisesRegex(ValueError, "between 0 and 5"):
+            Score(value=6, confidence=0.9)
 
 
 if __name__ == "__main__":
