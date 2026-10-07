@@ -52,8 +52,8 @@ def render_github_comment(result: AssessmentResult) -> str:
         + _boolean_badge(
             "Deeper review",
             result.deeper_review,
-            true_message="recommended",
-            false_message="standard",
+            true_message="required",
+            false_message="not required",
             true_color="orange",
             description="Whether deeper human review or additional validation is warranted.",
         ),

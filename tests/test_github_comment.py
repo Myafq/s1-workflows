@@ -37,6 +37,7 @@ class GitHubCommentTests(unittest.TestCase):
 
         self.assertIn("## S1 risk assessment", comment)
         self.assertIn("label=Classification&message=high+risk&color=orange", comment)
+        self.assertIn("label=Deeper+review&message=required&color=orange", comment)
         self.assertIn("label=Security&message=1%2F5&color=brightgreen", comment)
         self.assertIn("label=Performance&message=2%2F5&color=green", comment)
         self.assertIn("label=Change+impact&message=3%2F5&color=yellow", comment)
@@ -62,6 +63,9 @@ class GitHubCommentTests(unittest.TestCase):
 
         self.assertIn("_No risk scores returned._", comment)
         self.assertIn("label=Risk+flags&message=none&color=brightgreen", comment)
+        self.assertIn(
+            "label=Deeper+review&message=not+required&color=brightgreen", comment
+        )
 
 
 if __name__ == "__main__":
